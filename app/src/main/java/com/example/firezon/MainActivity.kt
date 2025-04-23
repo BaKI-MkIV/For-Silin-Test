@@ -230,7 +230,7 @@ fun InputField(
 
         Text(
             modifier = Modifier
-                .offset(x = 12.dp, y = (-8).dp)
+                .offset(x = 12.dp, y = (-12).dp)
                 .background(Color.White)
                 .padding(
                     horizontal = 4.dp
