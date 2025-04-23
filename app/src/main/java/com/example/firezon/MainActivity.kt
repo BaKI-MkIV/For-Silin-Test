@@ -44,12 +44,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.firezon.ui.theme.FirezonTheme
 import com.example.firezon.ui.theme.manropeFontFamily
 import com.example.firezon.ui.theme.systemText
 import com.example.firezon.ui.theme.titleLarge
@@ -58,26 +60,49 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-           ContactScreen()
+            var isDark by remember { mutableStateOf(false) } // по умолчанию false — светлая тема
+
+            FirezonTheme(darkTheme = isDark) {
+                ContactScreen(
+                    isDark = isDark,
+                    onToggleTheme = { isDark = !isDark }
+                )
+            }
         }
     }
 }
 
 
 @Composable
-fun ContactScreen() {
+fun ContactScreen(
+    isDark: Boolean,
+    onToggleTheme: () -> Unit
+) {
     Column(
         modifier = Modifier
-            .background(Color.White)
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        Header(title = "Новый контакт")
-        User(content = "Content string")
 
-        // Состояния для каждого поля
         var name by remember { mutableStateOf("") }
         var company by remember { mutableStateOf("") }
         var phone by remember { mutableStateOf("") }
+
+        Header(
+            title = "Новый контакт",
+            isDark = isDark,
+            onToggleTheme = onToggleTheme
+            )
+
+        val userContent = if (name.isBlank()) "Новый контакт" else name
+//        val userInitial = name.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
+        val userInitial = name.trimStart().firstOrNull()?.uppercaseChar()?.toString() ?: "?"
+
+
+        User(
+            content = userContent,
+            initial = userInitial
+        )
 
         InputBlock(
             name = name,
@@ -102,6 +127,8 @@ fun ContactScreen() {
 @Composable
 fun Header(title: String,
 //           onBackClick: () -> Unit)
+           isDark: Boolean,
+           onToggleTheme: () -> Unit
 ){
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -122,8 +149,9 @@ fun Header(title: String,
 
             Image(
                 painter = painterResource(id = R.drawable.arrow_left),
-                contentDescription = "стрелочка",
-                modifier = Modifier
+                contentDescription = "back-arrow-button",
+                modifier = Modifier,
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
 //                    .clickable { onBackClick() }
             )
         }
@@ -131,25 +159,34 @@ fun Header(title: String,
         Text(
             text = title,
             style = systemText,
+            color = MaterialTheme.colorScheme.onBackground
         )
+        Spacer(modifier = Modifier.weight(1f))
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .clickable { onToggleTheme() },
+            contentAlignment = Alignment.Center
+        ) {
+            val icon = if (isDark) R.drawable.moon else R.drawable.sun
+            Image(
+                painter = painterResource(id = icon),
+                contentDescription = "theme-changer",
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+            )
+        }
     }
 }
 
 
 @Composable
-fun User(content: String){
+fun User(content: String, initial: String) {
     Column (
-
         modifier = Modifier
             .fillMaxWidth()
-            .padding(
-                start = 16.dp,
-                end = 16.dp,
-                top = 8.dp,
-                bottom = 8.dp
-                ),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
-
     ) {
         Box(
             modifier = Modifier
@@ -159,8 +196,8 @@ fun User(content: String){
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text="A",
-                color = Color.Black.copy(alpha = 0.7f),
+                text = initial,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                 fontFamily = manropeFontFamily,
                 fontSize = 57.sp,
                 fontWeight = FontWeight.Bold
@@ -170,9 +207,11 @@ fun User(content: String){
         Text(
             text = content,
             style = titleLarge,
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
+
 
 @Composable
 fun InputBlock(
@@ -217,37 +256,34 @@ fun InputField(
                 .fillMaxSize(),
             textStyle = TextStyle(
                 fontSize = 16.sp,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground
             ),
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = keyboardType
             ),
 
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.Black.copy(alpha = 0.15f) // <- цвет при отсутствии фокуса
+                unfocusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.15f) // <- цвет при отсутствии фокуса
             )
         )
 
         Text(
             modifier = Modifier
                 .offset(x = 12.dp, y = (-8).dp)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(
                     horizontal = 4.dp
                 )
             ,
 
             text=inform,
-            color = Color.Black.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             fontFamily = manropeFontFamily,
             fontSize = 12.sp,
             letterSpacing = 0.4.sp,
 
             )
-
-
     }
-
 }
 
 
